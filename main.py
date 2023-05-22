@@ -17,10 +17,9 @@ intents.message_content = True
 client = discord.Client(intents=intents)
 
 async def generateReply(message: discord.Message):
-    print(f'Generating reply for {message.author}')
-
     async with message.channel.typing():
-        inputs = tokenizer(f'@@ПЕРВЫЙ@@{message.content}@@ВТОРОЙ@@', return_tensors='pt')
+        query = f'@@ПЕРВЫЙ@@{message.content}@@ВТОРОЙ@@'
+        inputs = tokenizer(query, return_tensors='pt')
         generated_token_ids = model.generate(
             **inputs,
             top_k=10,
@@ -36,9 +35,9 @@ async def generateReply(message: discord.Message):
             max_new_tokens=40
         )
         context_with_response = [tokenizer.decode(sample_token_ids) for sample_token_ids in generated_token_ids]
-        response = context_with_response[0].replace(f'@@ПЕРВЫЙ@@{message.content}@@ВТОРОЙ@@', '').split('@@ПЕРВЫЙ@@')[0]
-    
-    await message.reply(response)
+        response = context_with_response[0].replace(query, '').split('@@ПЕРВЫЙ@@')[0]
+
+        await message.reply(response)
 
 @client.event
 async def on_ready():
