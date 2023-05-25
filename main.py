@@ -16,9 +16,35 @@ intents.message_content = True
 
 client = discord.Client(intents=intents)
 
+def getQuery(message: discord.Message) -> str:
+    query = f'@@ПЕРВЫЙ@@{message.content}@@ВТОРОЙ@@'
+
+    ref = message.reference
+    if not ref:
+        return query
+
+    if not ref.cached_message:
+        return query
+    
+    if not ref.cached_message.author.id == client.user.id:
+        return query
+
+    ref2 = ref.cached_message.reference
+    if not ref2:
+        return query
+
+    if not ref2.cached_message:
+        return query
+    
+    if not ref2.cached_message.author.id == message.author.id:
+        return query
+
+    return f'@@ПЕРВЫЙ@@{ref2.cached_message.content}@@ВТОРОЙ@@{ref.cached_message.content}' + query
+
 async def generateReply(message: discord.Message):
+    query = getQuery(message)
+
     async with message.channel.typing():
-        query = f'@@ПЕРВЫЙ@@{message.content}@@ВТОРОЙ@@'
         inputs = tokenizer(query, return_tensors='pt')
         generated_token_ids = model.generate(
             **inputs,
