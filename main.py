@@ -1,7 +1,5 @@
 import discord
 import os
-import threading
-import asyncio
 from dotenv import load_dotenv
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
@@ -62,6 +60,9 @@ async def generateReply(message: discord.Message):
         )
         context_with_response = [tokenizer.decode(sample_token_ids) for sample_token_ids in generated_token_ids]
         response = context_with_response[0].replace(query, '').split('@@ПЕРВЫЙ@@')[0]
+
+        if not response.find('@@ВТОРОЙ@@') == -1:
+            response = response.split('@@ВТОРОЙ@@')[0]
 
         await message.reply(response)
 
